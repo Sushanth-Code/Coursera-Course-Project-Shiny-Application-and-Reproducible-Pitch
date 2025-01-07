@@ -1,0 +1,168 @@
+# Car Price Prediction Shiny App
+# Name:-Sushanth P H
+# Date:-7th Jan 2025
+
+## **Synopsis**
+
+Predicting car prices is a crucial task for understanding market trends, aiding buyers and sellers in making informed decisions. This project, **Car Price Prediction Shiny App**, is an interactive web application that allows users to predict car prices based on key attributes such as brand, mileage, and year of manufacture. The app provides a dynamic interface and insightful visualizations to explore the relationships between various features and car prices.
+
+The app is powered by a linear regression model and hosted on ShinyApps.io for ease of access.
+
+---
+
+## **Live Application and Presentation**
+
+- **Live Shiny App:** [Car Price Prediction App](https://sushanth.shinyapps.io/Carpriceprediction/)  
+- **RPubs Presentation:** [Car Price Prediction Presentation](https://rpubs.com/Sams/1261423)
+
+---
+
+## **Features**
+
+1. **Price Prediction**
+   - Predict car prices based on user-provided details (e.g., brand, year, mileage).
+
+2. **Dynamic Visualizations**
+   - Scatter plots and histograms to explore feature relationships.
+   - Interactive plots for better understanding.
+
+3. **Interactive UI**
+   - A user-friendly interface for both input and analysis.
+
+4. **Machine Learning Integration**
+   - Linear regression for prediction using R's modeling capabilities.
+
+---
+
+## **Dataset**
+
+The app uses a synthetic dataset with the following key columns:
+- **Brand:** Car manufacturer.
+- **Year:** Year of manufacture.
+- **Mileage:** Kilometers driven.
+- **Price:** Selling price of the car.
+
+This dataset is used to train a simple linear regression model.
+
+---
+
+## **Technology Stack**
+
+- **Programming Language:** R
+- **Framework:** Shiny
+- **Data Visualization:** ggplot2, Plotly
+- **Deployment:** ShinyApps.io
+- **Documentation:** RMarkdown, RPubs
+
+---
+
+## **Installation and Setup**
+
+### **Prerequisites**
+
+1. **Install R and RStudio**  
+   Download and install R from [CRAN](https://cran.r-project.org/).  
+   Optionally, install RStudio from [RStudio](https://posit.co/products/open-source/rstudio/).
+
+2. **Install Required Packages**  
+   Install the required R packages by running:
+   ```r
+   install.packages(c("shiny", "ggplot2", "plotly", "dplyr", "rsconnect"))
+
+Running Locally
+Clone the Repository
+
+bash
+Copy code
+git clone https://github.com/yourusername/CarPricePrediction.git
+cd CarPricePrediction
+Run the App Open app.R in RStudio and click Run App. Or run directly:
+
+r
+Copy code
+library(shiny)
+runApp("path/to/CarPricePrediction")
+
+Project Code
+Below is the complete code for the Car Price Prediction Shiny App:
+
+app.R
+r
+Copy code
+library(shiny)
+library(ggplot2)
+library(plotly)
+
+# Load or generate a synthetic dataset
+car_data <- data.frame(
+  Brand = c("Toyota", "Ford", "BMW", "Honda"),
+  Year = c(2010, 2012, 2015, 2018),
+  Mileage = c(120000, 90000, 60000, 30000),
+  Price = c(5000, 8000, 15000, 20000)
+)
+
+# Linear regression model
+model <- lm(Price ~ Year + Mileage, data = car_data)
+
+# UI
+ui <- fluidPage(
+  titlePanel("Car Price Prediction App"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("brand", "Select Brand:", choices = unique(car_data$Brand)),
+      sliderInput("year", "Select Year:", min = 2000, max = 2023, value = 2015),
+      sliderInput("mileage", "Enter Mileage (km):", min = 0, max = 300000, value = 100000),
+      actionButton("predict", "Predict Price")
+    ),
+    mainPanel(
+      h3("Predicted Price:"),
+      verbatimTextOutput("predicted_price"),
+      h3("Visualizations:"),
+      plotlyOutput("scatter_plot"),
+      plotlyOutput("histogram")
+    )
+  )
+)
+
+# Server
+server <- function(input, output) {
+  # Prediction
+  predicted_price <- eventReactive(input$predict, {
+    new_data <- data.frame(Year = input$year, Mileage = input$mileage)
+    predict(model, newdata = new_data)
+  })
+  output$predicted_price <- renderText({
+    sprintf("USD %.2f", predicted_price())
+  })
+
+  # Scatter plot
+  output$scatter_plot <- renderPlotly({
+    p <- ggplot(car_data, aes(x = Mileage, y = Price, color = Brand)) +
+      geom_point(size = 3) +
+      labs(title = "Price vs Mileage", x = "Mileage (km)", y = "Price (USD)") +
+      theme_minimal()
+    ggplotly(p)
+  })
+
+  # Histogram
+  output$histogram <- renderPlotly({
+    p <- ggplot(car_data, aes(x = Year)) +
+      geom_histogram(binwidth = 1, fill = "blue", color = "white") +
+      labs(title = "Car Distribution by Year", x = "Year", y = "Count") +
+      theme_minimal()
+    ggplotly(p)
+  })
+}
+
+# Run the app
+shinyApp(ui = ui, server = server)
+Project Structure
+bash
+Copy code
+CarPricePrediction/
+│
+├── app.R                # Main Shiny app code
+├── data/                # Directory for datasets
+├── README.md            # Project documentation
+├── .gitignore           # Exclude unnecessary files
+└── LICENSE              # License file
